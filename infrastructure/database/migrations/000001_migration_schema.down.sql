@@ -1,6 +1,22 @@
-DELETE TABLE IF EXISTS applicants;
-DELETE TABLE IF EXISTS sectors;
-DELETE TABLE IF EXISTS companies;
-DELETE TABLE IF EXISTS accounts;
-DELETE TYPE IF EXISTS account_role;
+DROP TABLE IF EXISTS experience;
+DROP TABLE IF EXISTS educations;
+DROP TABLE IF EXISTS essay_answer;
+DROP TABLE IF EXISTS submissions_file;
+DROP TABLE IF EXISTS submissions;
+DROP TABLE IF EXISTS essay_question;
+DROP TABLE IF EXISTS jobs;
+DROP TABLE IF EXISTS job_category;
+DROP TABLE IF EXISTS wallets;
+DROP TABLE IF EXISTS transactions;
+DROP TABLE IF EXISTS applicants;
+DROP TABLE IF EXISTS companies;
+DROP TABLE IF EXISTS sectors;
+DROP TABLE IF EXISTS accounts;
 
+DROP TYPE IF EXISTS payment_status_enum;
+DROP TYPE IF EXISTS submit_status_enum;
+DROP TYPE IF EXISTS education_enum;
+DROP TYPE IF EXISTS job_status_enum;
+DROP TYPE IF EXISTS employment_enum;
+DROP TYPE IF EXISTS workplace_enum;
+DROP TYPE IF EXISTS account_role_enum;
