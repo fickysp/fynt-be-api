@@ -1,7 +1,6 @@
 package database
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/fickysp/fynt-be-api/config"
@@ -10,10 +9,7 @@ import (
 )
 
 func NewPostgres(cfg *config.Config) (*sqlx.DB, error) {
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable TimeZone=Asia/jakarta",
-		cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName,
-	)
-	db, err := sqlx.Connect("pgx", dsn)
+	db, err := sqlx.Connect("pgx", cfg.DatabaseURL)
 	if err != nil {
 		return nil, err
 	}
