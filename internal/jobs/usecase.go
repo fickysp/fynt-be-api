@@ -3,6 +3,8 @@ package jobs
 import (
 	"context"
 	"errors"
+	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -16,9 +18,13 @@ type JobUsecase interface {
 	GetAllCategories(ctx context.Context) ([]DTOJobCategoryResponses, error)
 	GetAllJob(ctx context.Context) ([]DTOJobsResponses, error)
 	CreateJob(ctx context.Context, accID string, req DTOJobRequest) error
-	UpdateJob(ctx context.Context, accID, jobID string, req DTOUpdateJobRequest) error
+	UpdateJob(ctx context.Context, jobIDStr string, accountID string, req *DTOJobUpdate) error
 	GetJobByID(ctx context.Context, jobID string) (*DTOJobsResponses, error)
-	GetJobSummary(ctx context.Context, jobID string) (*DTOJobSummaryResponses, error)
+	GetJobSummary(ctx context.Context, compID string) (*DTOJobSummaryResponses, error)
+	SearchJobs(ctx context.Context, keyword string) ([]DTOJobSearchResponses, error)
+}
+
+type SubmissionRepo interface {
 }
 
 type jobUsecase struct {
@@ -128,84 +134,98 @@ func (u *jobUsecase) CreateJob(ctx context.Context, accId string, req DTOJobRequ
 		if strings.TrimSpace(q) == "" {
 			continue
 		}
+		id := uuid.New()
 		essayQuestions = append(essayQuestions, questions.Questions{
-			ID:              uuid.New(),
-			JobID:           jobUUID,
-			QuestionsDetail: u.sanitizer.Sanitize(q),
+			ID:              &id,
+			JobID:           &jobUUID,
+			QuestionsDetail: &q,
 		})
 	}
 
 	return u.jobRepo.CreateJobWithQuestionsTx(ctx, job, essayQuestions, accId, wallet.Balance-cost)
 }
 
-func (u *jobUsecase) UpdateJob(ctx context.Context, accID, jobID string, req DTOUpdateJobRequest) error {
-	existingJob, err := u.jobRepo.GetJobById(ctx, jobID)
+func (u *jobUsecase) UpdateJob(
+	ctx context.Context,
+	jobIDStr string,
+	accountID string,
+	req *DTOJobUpdate,
+) error {
+
+	jobID, err := uuid.Parse(jobIDStr)
 	if err != nil {
-		return errors.New("job not found")
+		return fmt.Errorf("format ID lowongan tidak valid: %w", err)
 	}
 
+	job, err := u.jobRepo.GetJobById(ctx, jobIDStr)
+	if err != nil {
+		return errors.New("lowongan tidak ditemukan")
+	}
+
+	if job.CompanyID.String() != *req.CompanyID {
+		return errors.New("Anda tidak memiliki akses untuk memperbarui lowongan ini")
+	}
+
+	var jobDesc *string
+	var status *string
+	var extendCoins *int
 	var newBalance *int64
 
-	if req.ExtendCoins > 0 {
-		wallet, err := u.walletRepo.GetWalletByID(ctx, accID)
+	if req.JobDesc != nil && *req.JobDesc != "" {
+		sanitizedDesc := u.sanitizer.Sanitize(*req.JobDesc)
+		jobDesc = &sanitizedDesc
+	}
+
+	if req.Status != nil && *req.Status != "" {
+		status = req.Status
+	}
+
+	if req.ExtendCoins != nil && *req.ExtendCoins > 0 {
+		wallet, err := u.walletRepo.GetWalletByID(ctx, accountID)
 		if err != nil {
-			return err
+			return fmt.Errorf("gagal mengecek saldo wallet: %w", err)
 		}
 
-		if wallet.Balance < req.ExtendCoins {
-			return errors.New("you do not have enough coins to create a job.")
+		if wallet.Balance < int64(*req.ExtendCoins) {
+			return fmt.Errorf("saldo tidak mencukupi untuk menambah %d koin lamaran", req.ExtendCoins)
 		}
-
-		calcBalance := wallet.Balance - req.ExtendCoins
-		newBalance = &calcBalance
-
-		newClosingDate := existingJob.ClosingDate.AddDate(0, 0, int(req.ExtendCoins*7))
-		existingJob.ClosingDate = &newClosingDate
+		calculatedBalance := wallet.Balance - int64(*req.ExtendCoins)
+		newBalance = &calculatedBalance
+		extendCoins = req.ExtendCoins
 	}
 
-	if req.JobCategoryID != nil {
-		catUUID, _ := uuid.Parse(*req.JobCategoryID)
-		existingJob.JobCategoryID = catUUID
-	}
-	if req.Position != nil {
-		existingJob.Position = *req.Position
-	}
-	if req.Location != nil {
-		existingJob.Location = *req.Location
-	}
-	if req.Workplace != nil {
-		existingJob.Workplace = *req.Workplace
-	}
-	if req.Employment != nil {
-		existingJob.Employment = *req.Employment
-	}
-	if req.SalaryDesc != nil {
-		existingJob.SalaryDesc = *req.SalaryDesc
-	}
-	if req.JobDesc != nil {
-		existingJob.JobDesc = u.sanitizer.Sanitize(*req.JobDesc)
-	}
-	if req.Slot != nil {
-		existingJob.Slot = req.Slot
+	if jobDesc == nil && status == nil && extendCoins == nil {
+		return errors.New("tidak ada data lowongan yang diperbarui")
 	}
 
-	var newQuestions []questions.Questions
+	var jobDescVal string
+	var statusVal string
+	var extendCoinsVal int
 
-	if req.EssayQuestions != nil {
-		newQuestions = make([]questions.Questions, 0)
-		for _, q := range req.EssayQuestions {
-			if strings.TrimSpace(q) == "" {
-				continue
-			}
-			newQuestions = append(newQuestions, questions.Questions{
-				ID:              uuid.New(),
-				JobID:           existingJob.ID,
-				QuestionsDetail: u.sanitizer.Sanitize(q),
-			})
-		}
+	if jobDesc != nil {
+		jobDescVal = *jobDesc
+	}
+	if status != nil {
+		statusVal = *status
+	}
+	if extendCoins != nil {
+		extendCoinsVal = *extendCoins
 	}
 
-	return u.jobRepo.UpdateJobWithQuestionsTx(ctx, existingJob, newQuestions, accID, newBalance)
+	err = u.jobRepo.UpdateJobDetails(ctx, jobID, accountID, jobDescVal, statusVal, extendCoinsVal, newBalance)
+
+	if err != nil {
+		slog.Error(
+			"Usecase gagal memperbarui lowongan",
+			"job_id", jobIDStr,
+			"account_id", accountID,
+			"error", err,
+		)
+
+		return fmt.Errorf("gagal memperbarui data lowongan: %w", err)
+	}
+
+	return nil
 }
 
 func (u *jobUsecase) GetJobByID(ctx context.Context, jobID string) (*DTOJobsResponses, error) {
@@ -237,22 +257,24 @@ func (u *jobUsecase) GetJobByID(ctx context.Context, jobID string) (*DTOJobsResp
 }
 
 func (u *jobUsecase) GetJobSummary(ctx context.Context, compID string) (*DTOJobSummaryResponses, error) {
-	allJobs, err := u.jobRepo.CountAllJobs(ctx, compID)
+	stats, err := u.jobRepo.GetJobStatistics(ctx, compID)
 	if err != nil {
-		return nil, err
+		return &DTOJobSummaryResponses{}, err
 	}
-	activeJobs, err := u.jobRepo.CountActiveJobs(ctx, compID)
-	if err != nil {
-		return nil, err
-	}
-	closeJobs, err := u.jobRepo.CountCloseJobs(ctx, compID)
+
+	return stats, nil
+}
+
+func (u *jobUsecase) SearchJobs(ctx context.Context, keyword string) ([]DTOJobSearchResponses, error) {
+	searchKeyword := "%" + keyword + "%"
+	jobs, err := u.jobRepo.SearchJobs(ctx, searchKeyword)
 	if err != nil {
 		return nil, err
 	}
 
-	return &DTOJobSummaryResponses{
-		ActiveJobs: *activeJobs,
-		AllJobs:    *allJobs,
-		CLoseJobs:  *closeJobs,
-	}, nil
+	if jobs == nil {
+		return []DTOJobSearchResponses{}, nil
+	}
+
+	return jobs, nil
 }

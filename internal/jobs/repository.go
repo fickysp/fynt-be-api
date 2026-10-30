@@ -3,6 +3,7 @@ package jobs
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/fickysp/fynt-be-api/internal/questions"
@@ -16,13 +17,16 @@ type JobRepository interface {
 	GetAllCategories(ctx context.Context) ([]JobCategory, error)
 	GetAllJob(ctx context.Context) ([]Job, error)
 	CreateJobWithQuestionsTx(ctx context.Context, job *Job, questions []questions.Questions, accID string, newBalance int64) error
-	UpdateJobWithQuestionsTx(ctx context.Context, job *Job, questions []questions.Questions, accID string, newBalance *int64) error
-
-	CountAllJobs(ctx context.Context, compID string) (*uint16, error)
-	CountCloseJobs(ctx context.Context, compID string) (*uint16, error)
-	CountActiveJobs(ctx context.Context, compID string) (*uint16, error)
+	UpdateJobDetails(ctx context.Context, jobID uuid.UUID, accID, jobDesc, status string, extendCoins int, newWalletBalance *int64) error
+	SearchJobs(ctx context.Context, keyword string) ([]DTOJobSearchResponses, error)
+	GetJobStatistics(ctx context.Context, compID string) (*DTOJobSummaryResponses, error)
 }
 
+type JobStats struct {
+	TotalJobs  uint16 `db:"total_jobs"`
+	ActiveJobs uint16 `db:"active_jobs"`
+	CloseJobs  uint16 `db:"close_jobs"`
+}
 type jobRepository struct {
 	db *sqlx.DB
 }
@@ -100,7 +104,7 @@ func (r *jobRepository) CreateJobWithQuestionsTx(ctx context.Context, job *Job, 
 	}
 
 	if len(questions) > 0 {
-		questionQuery := `INSERT INTO essay_question (id, job_id, question_detail) VALUES (:id, :job_id, :questions_detail)`
+		questionQuery := `INSERT INTO essay_question (id, job_id, question_detail) VALUES (:id, :job_id, :question_detail)`
 		if _, err = tx.NamedExecContext(ctx, questionQuery, questions); err != nil {
 			return err
 		}
@@ -109,17 +113,17 @@ func (r *jobRepository) CreateJobWithQuestionsTx(ctx context.Context, job *Job, 
 	return tx.Commit()
 }
 
-func (r *jobRepository) UpdateJobWithQuestionsTx(ctx context.Context, job *Job, questions []questions.Questions, accID string, newBalance *int64) error {
+func (r *jobRepository) UpdateJobDetails(ctx context.Context, jobID uuid.UUID, accID, jobDesc, status string, extendCoins int, newWalletBalance *int64) error {
 	tx, err := r.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
 
-	if newBalance != nil {
-		_, err = tx.ExecContext(ctx, "UPDATE wallets SET balance = $1, updated_at = CURRENT_TIMESTAMP WHERE account_id = $2", *newBalance, accID)
+	if extendCoins > 0 && newWalletBalance != nil {
+		_, err = tx.ExecContext(ctx, "UPDATE wallets SET balance = $1, updated_at = CURRENT_TIMESTAMP WHERE account_id = $2", *newWalletBalance, accID)
 		if err != nil {
-			return err
+			return fmt.Errorf("gagal update wallet balance: %w", err)
 		}
 	}
 
@@ -127,96 +131,97 @@ func (r *jobRepository) UpdateJobWithQuestionsTx(ctx context.Context, job *Job, 
 	var args []interface{}
 	argCounter := 1
 
-	appendClause := func(column string, value interface{}) {
-		setClauses = append(setClauses, fmt.Sprintf("%s = $%d", column, argCounter))
-		args = append(args, value)
+	if jobDesc != "" {
+		setClauses = append(setClauses, fmt.Sprintf("jobdesc = $%d", argCounter))
+		args = append(args, jobDesc)
 		argCounter++
 	}
-
-	if job.JobCategoryID != uuid.Nil {
-		appendClause("job_category_id", job.JobCategoryID)
+	if status != "" {
+		setClauses = append(setClauses, fmt.Sprintf("status = $%d", argCounter))
+		args = append(args, status)
+		argCounter++
 	}
-	if job.Position != "" {
-		appendClause("position", job.Position)
-	}
-	if job.Location != "" {
-		appendClause("location", job.Location)
-	}
-	if job.Workplace != "" {
-		appendClause("workplace", job.Workplace)
-	}
-	if job.Employment != "" {
-		appendClause("employment", job.Employment)
-	}
-	if job.SalaryDesc != "" {
-		appendClause("salary_desc", job.SalaryDesc)
-	}
-	if job.JobDesc != "" {
-		appendClause("jobdesc", job.JobDesc)
-	}
-	if job.Status != "" {
-		appendClause("status", job.Status)
-	}
-	if job.Slot != nil {
-		appendClause("slot", job.Slot)
-	}
-	if job.CoinApplyment != 0 {
-		appendClause("coin_applyment", job.CoinApplyment)
-	}
-	if job.ClosingDate != nil {
-		appendClause("closing_date", job.ClosingDate)
+	if extendCoins > 0 {
+		setClauses = append(setClauses, fmt.Sprintf("coin_applyment = coin_applyment + $%d", argCounter))
+		args = append(args, extendCoins)
+		argCounter++
 	}
 
 	if len(setClauses) > 0 {
 		setClauses = append(setClauses, "updated_at = CURRENT_TIMESTAMP")
 		query := fmt.Sprintf("UPDATE jobs SET %s WHERE id = $%d", strings.Join(setClauses, ", "), argCounter)
-		args = append(args, job.ID)
+		args = append(args, jobID)
 
 		if _, err = tx.ExecContext(ctx, query, args...); err != nil {
-			return err
+			return fmt.Errorf("gagal update data jobs: %w", err)
 		}
+	} else {
+		return fmt.Errorf("tidak ada data job yang diperbarui")
 	}
 
-	if questions != nil {
-		if _, err = tx.ExecContext(ctx, "DELETE FROM essay_question WHERE job_id = $1", job.ID); err != nil {
-			return err
-		}
-
-		if len(questions) > 0 {
-			questionQuery := `INSERT INTO essay_question (id, job_id, question_detail) VALUES (:id, :job_id, :questions_detail)`
-			if _, err = tx.NamedExecContext(ctx, questionQuery, questions); err != nil {
-				return err
-			}
+	if status == "close" {
+		rejectQuery := `
+			UPDATE submissions 
+			SET status = 'rejected', decided_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP 
+			WHERE job_id = $1 
+			  AND status NOT IN ('reviewed', 'shortlisted', 'accepted', 'rejected')
+		`
+		if _, err = tx.ExecContext(ctx, rejectQuery, jobID); err != nil {
+			return fmt.Errorf("gagal memperbarui status pelamar menjadi rejected: %w", err)
 		}
 	}
 
 	return tx.Commit()
 }
 
-func (r *jobRepository) CountAllJobs(ctx context.Context, accID string) (*uint16, error) {
-	var totalJobs uint16
-	query := `SELECT COUNT(*) AS total FROM jobs WHERE account_id = $1`
-	if err := r.db.SelectContext(ctx, &totalJobs, query, accID); err != nil {
+func (r *jobRepository) SearchJobs(ctx context.Context, keyword string) ([]DTOJobSearchResponses, error) {
+	var jobs []DTOJobSearchResponses
+	query := `
+		SELECT 
+			j.id,
+			c.company_name, 
+			j.position,
+			j.location,
+			j.workplace,
+			j.employment,
+			j.salary_desc,
+			j.status,
+			j.slot,
+			j.filled_slot,
+			j.coin_applyment,
+			j.closing_date
+		FROM jobs j
+		JOIN companies c ON j.company_id = c.id
+		WHERE j.position ILIKE $1 OR c.company_name ILIKE $1
+		ORDER BY j.created_at DESC
+	`
+
+	if err := r.db.SelectContext(ctx, &jobs, query, keyword); err != nil {
+		slog.Error("Penyebab error", "keyword", keyword, "error", err)
 		return nil, err
 	}
 
-	return &totalJobs, nil
+	return jobs, nil
 }
-func (r *jobRepository) CountActiveJobs(ctx context.Context, accID string) (*uint16, error) {
-	var totalJobs uint16
-	query := `SELECT COUNT(*) AS total FROM jobs WHERE account_id = $1 AND status = 'active'`
-	if err := r.db.SelectContext(ctx, &totalJobs, query, accID); err != nil {
+
+func (r *jobRepository) GetJobStatistics(ctx context.Context, compID string) (*DTOJobSummaryResponses, error) {
+	var stats DTOJobSummaryResponses
+	query := `
+		SELECT 
+			COUNT(DISTINCT j.id) AS total_jobs,
+			COUNT(DISTINCT CASE WHEN j.status = 'active' THEN j.id END) AS active_jobs,
+			COUNT(DISTINCT CASE WHEN j.status = 'close' THEN j.id END) AS close_jobs,
+			
+			COUNT(s.id) AS total_submissions,
+			COUNT(CASE WHEN j.status = 'active' AND s.id IS NOT NULL THEN s.id END) AS submissions_in_active_job,
+			COUNT(CASE WHEN s.status = 'reviewed' THEN s.id END) AS submissions_in_review
+		FROM jobs j
+		LEFT JOIN submissions s ON j.id = s.job_id
+		WHERE j.company_id = $1`
+
+	if err := r.db.GetContext(ctx, &stats, query, compID); err != nil {
 		return nil, err
 	}
 
-	return &totalJobs, nil
-}
-func (r *jobRepository) CountCloseJobs(ctx context.Context, accID string) (*uint16, error) {
-	var totalJobs uint16
-	query := `SELECT COUNT(*) AS total FROM jobs WHERE account_id = $1 AND status = 'close'`
-	if err := r.db.SelectContext(ctx, &totalJobs, query, accID); err != nil {
-		return nil, err
-	}
-
-	return &totalJobs, nil
+	return &stats, nil
 }

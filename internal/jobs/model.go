@@ -21,6 +21,7 @@ type Job struct {
 	FilledSlot    int        `db:"filled_slot"`
 	CoinApplyment int64      `db:"coin_applyment"`
 	ClosingDate   *time.Time `db:"closing_date"`
+	ImageURL      *string    `db:"image_url"`
 	CreatedAt     time.Time  `db:"created_at"`
 	UpdatedAt     time.Time  `db:"updated_at"`
 }
@@ -49,18 +50,11 @@ type DTOJobRequest struct {
 	EssayQuestions []string `json:"essay_questions" validate:"required,max=5,dive"`
 }
 
-type DTOUpdateJobRequest struct {
-	CompanyID      string   `json:"-"`
-	JobCategoryID  *string  `json:"job_category_id" validate:"omitempty,uuid"`
-	Position       *string  `json:"position"`
-	Location       *string  `json:"location"`
-	Workplace      *string  `json:"workplace"`
-	Employment     *string  `json:"employment"`
-	SalaryDesc     *string  `json:"salary_desc"`
-	JobDesc        *string  `json:"jobdesc"`
-	Slot           *int     `json:"slot"`
-	ExtendCoins    int64    `json:"extend_coins"`
-	EssayQuestions []string `json:"essay_questions"`
+type DTOJobUpdate struct {
+	CompanyID   *string `json:"-" validate:"-"`
+	JobDesc     *string `json:"jobdesc" validate:"omitempty"`
+	Status      *string `json:"status" validate:"omitempty,oneof=active close draft"`
+	ExtendCoins *int    `json:"extend_coins" validate:"omitempty,min=0"`
 }
 
 type DTOJobCategoryResponses struct {
@@ -87,8 +81,56 @@ type DTOJobsResponses struct {
 	UpdatedAt     time.Time  `json:"updated_at"`
 }
 
+type DTOJobSearchResponses struct {
+	ID            string `json:"id"`
+	CompanyName   string `json:"company_name"`
+	Position      string `json:"position"`
+	Location      string `json:"location"`
+	Workplace     string `json:"workplace"`
+	Employment    string `json:"employment"`
+	SalaryDesc    string `json:"salary_desc"`
+	Status        string `json:"status"`
+	Slot          int    `json:"slot"`
+	FilledSlot    int    `json:"filled_slot"`
+	CoinApplyment int64  `json:"coin_applyment"`
+	ClosingDate   string `json:"closing_date"`
+}
+
 type DTOJobSummaryResponses struct {
-	AllJobs    uint16 `json:"all_jobs"`
-	ActiveJobs uint16 `json:"active_jobs"`
-	CLoseJobs  uint16 `json:"close_jobs"`
+	TotalJobs              uint16 `db:"total_jobs" json:"total_jobs"`
+	ActiveJobs             uint16 `db:"active_jobs" json:"active_jobs"`
+	CloseJobs              uint16 `db:"close_jobs" json:"close_jobs"`
+	TotalSubmissions       uint16 `db:"total_submissions" json:"total_submissions"`
+	SubmissionsInActiveJob uint64 `db:"submissions_in_active_job" json:"submissions_in_active_job"`
+	SubmissionsInReview    uint16 `db:"submissions_in_review" json:"submissions_in_review"`
+}
+
+type SwaggerJobCategoriesResponse struct {
+	Success bool                      `json:"success" example:"true"`
+	Message string                    `json:"message" example:"Get data success"`
+	Data    []DTOJobCategoryResponses `json:"data"`
+}
+
+type SwaggerJobsResponse struct {
+	Success bool               `json:"success" example:"true"`
+	Message string             `json:"message" example:"Get data success"`
+	Data    []DTOJobsResponses `json:"data"`
+}
+
+type SwaggerJobResponse struct {
+	Success bool              `json:"success" example:"true"`
+	Message string            `json:"message" example:"Get data success"`
+	Data    *DTOJobsResponses `json:"data"`
+}
+
+type SwaggerJobSearchResponse struct {
+	Success bool                    `json:"success" example:"true"`
+	Message string                  `json:"message" example:"Get data success"`
+	Data    []DTOJobSearchResponses `json:"data"`
+}
+
+type SwaggerJobSummaryResponse struct {
+	Success bool                    `json:"success" example:"true"`
+	Message string                  `json:"message" example:"Get data success"`
+	Data    *DTOJobSummaryResponses `json:"data"`
 }
