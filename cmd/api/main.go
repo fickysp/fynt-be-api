@@ -1,16 +1,21 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 	"os"
 	"time"
 
+	_ "github.com/fickysp/fynt-be-api/cmd/api/docs"
 	"github.com/fickysp/fynt-be-api/config"
 	"github.com/fickysp/fynt-be-api/infrastructure/database"
 	"github.com/fickysp/fynt-be-api/infrastructure/router"
 	"github.com/fickysp/fynt-be-api/internal/applicant"
 	"github.com/fickysp/fynt-be-api/internal/auth"
 	"github.com/fickysp/fynt-be-api/internal/company"
+	"github.com/fickysp/fynt-be-api/internal/documents"
+	"github.com/fickysp/fynt-be-api/internal/education"
+	"github.com/fickysp/fynt-be-api/internal/experiences"
 	"github.com/fickysp/fynt-be-api/internal/fileuploads"
 	"github.com/fickysp/fynt-be-api/internal/jobs"
 	"github.com/fickysp/fynt-be-api/internal/middleware"
@@ -20,13 +25,53 @@ import (
 	"github.com/fickysp/fynt-be-api/internal/transaction"
 	"github.com/fickysp/fynt-be-api/internal/wallet"
 	"github.com/fickysp/fynt-be-api/pkg/payment"
+	"github.com/fickysp/fynt-be-api/pkg/response"
 	"github.com/fickysp/fynt-be-api/pkg/storage"
 	"github.com/fickysp/fynt-be-api/pkg/validation"
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/cors"
 	"github.com/gofiber/fiber/v3/middleware/logger"
 	"github.com/gofiber/fiber/v3/middleware/recover"
+	"golang.ngrok.com/ngrok/v2"
 )
+
+// @title Fynt API
+// @version 1.0
+// @description REST API untuk sistem rekrutmen Fynt (Seeker & Recruiter).
+// @host localhost:8080
+// @BasePath /api/v1
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+func connectNgrok(token string) {
+	go func() {
+		if token == "" {
+			slog.Warn("NGROK_AUTHTOKEN tidak ditemukan, ngrok tidak dijalankan")
+			return
+		}
+
+		slog.Info("mencoba start ngrok tunnel...")
+
+		// Buat agent dulu dengan authtoken
+		agent, err := ngrok.NewAgent(ngrok.WithAuthtoken(token))
+		if err != nil {
+			slog.Error("ngrok gagal buat agent", "error", err)
+			return
+		}
+
+		// Forward menggunakan agent
+		fwd, err := agent.Forward(context.Background(),
+			ngrok.WithUpstream("http://localhost:8080"),
+			ngrok.WithURL("https://shininess-stalling-cone.ngrok-free.dev"),
+		)
+		if err != nil {
+			slog.Error("ngrok gagal start", "error", err)
+			return
+		}
+		slog.Info("ngrok tunnel aktif", "url", fwd.URL())
+		<-fwd.Done()
+	}()
+}
 
 func main() {
 	loc, err := time.LoadLocation("Asia/Jakarta")
@@ -34,13 +79,6 @@ func main() {
 		time.Local = loc
 	}
 	cfg := config.Load()
-
-	db, err := database.NewPostgres(cfg)
-	if err != nil {
-		slog.Error("failed to connect to database", "error", err)
-		os.Exit(1)
-	}
-	slog.Info("database connected!")
 
 	database.RunDBMigration(cfg.MigrationPath, cfg.DatabaseURL)
 	val := validation.NewStructValidator()
@@ -52,29 +90,55 @@ func main() {
 	supabaseKey := cfg.SupabaseKey
 	storageClient := storage.NewSupabaseStorage(supabaseURL, supabaseKey, supabaseBucket)
 
+	db, err := database.NewPostgres(cfg)
+	if err != nil {
+		slog.Error("failed to connect to database", "error", err)
+		os.Exit(1)
+	}
+	slog.Info("database connected!")
+
 	authRepo := auth.NewAuthRepository(db)
 	companyRepo := company.NewRepository(db)
 	applicantRepo := applicant.NewRepository(db)
 	profileRepo := auth.NewProfileRepositoryAdapter(companyRepo, applicantRepo)
 	walletRepo := wallet.NewWalletRepository(db)
 	transactionRepo := transaction.NewTransactionRepository(db)
-	sectorRepo := sectors.NewSectorReporitory(db)
+	sectorRepo := sectors.NewSectorRepository(db)
 	jobsRepo := jobs.NewJobRepository(db)
 	questionsRepo := questions.NewQuestionRepository(db)
 	submissionRepo := submissions.NewSubmissionRepository(db)
+	documentRepo := documents.NewDocumentRepository(db)
+	educationRepo := education.NeweducationRepository(db)
+	experienceRepo := experiences.NewExperienceRepository(db)
 
 	authUsecase := auth.NewAuthUsecase(authRepo, profileRepo, walletRepo, sectorRepo)
+	applicantUsecase := applicant.NewApplicantUsecase(applicantRepo, storageClient)
+	companyUsecase := company.NewCompanyUsecase(companyRepo, walletRepo, sectorRepo, storageClient)
 	walletUsecase := wallet.NewWalletUsecase(walletRepo, transactionRepo, pgClient, profileRepo)
 	jobsUsecase := jobs.NewJobUsecase(jobsRepo, walletRepo, questionsRepo)
 	submissionUsecase := submissions.NewSubmissionUsecase(submissionRepo, jobsRepo, walletRepo, applicantRepo)
 	transactionUsecase := transaction.NewTransactionUsecase(transactionRepo)
+	documentUsecase := documents.NewDocumentUsecase(documentRepo, storageClient)
+	educationUsecase := education.NewEducationUsecase(educationRepo)
+	experienceUsecase := experiences.NewExperienceUsecase(experienceRepo)
+	questionsUsecase := questions.NewQuestionUsecase(questionsRepo)
+	sectorUsecase := sectors.NewSectorsUsecase(sectorRepo)
 
 	authHandler := auth.NewAuthHandler(authUsecase, val, cfg)
 	walletHandler := wallet.NewWalletHandler(walletUsecase, val, cfg)
 	jobsHandler := jobs.NewJobsHandler(jobsUsecase, val, cfg)
 	submissionHandler := submissions.NewSubmissionsHandler(submissionUsecase, val)
-	transactionHandler := transaction.NewTransactionHandler(transactionUsecase)
+	transactionHandler := transaction.NewTransactionHandler(transactionUsecase, cfg)
 	fileUploadHandler := fileuploads.NewFileUploadsHandler(storageClient)
+	applicationHandler := applicant.NewApplicantHandler(applicantUsecase, val)
+	educationHandler := education.NewEducationHandler(educationUsecase)
+	companyHandler := company.NewCompanyHandler(companyUsecase, val, cfg)
+	docmentHandler := documents.NewDocumentHandler(documentUsecase)
+	experienceHandler := experiences.NewExperienceHandler(experienceUsecase)
+	questionHandler := questions.NewQuestionHandler(questionsUsecase)
+	sectorHandler := sectors.NewSectorsHandler(sectorUsecase)
+
+	connectNgrok(cfg.NgrokToken)
 
 	app := fiber.New(fiber.Config{
 		BodyLimit: 20 * 1024 * 1024,
@@ -83,9 +147,10 @@ func main() {
 			if e, ok := err.(*fiber.Error); ok {
 				code = e.Code
 			}
-			return c.Status(code).JSON(fiber.Map{
-				"success": false,
-				"message": err.Error(),
+			return c.Status(code).JSON(response.BaseResponse{
+				Success: false,
+				Message: err.Error(),
+				Data:    nil,
 			})
 		},
 	})
@@ -93,13 +158,13 @@ func main() {
 	app.Use(logger.New())
 	app.Use(recover.New())
 
-	app.Use(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000, https://fynt.vercel.app"},
-		AllowHeaders:     []string{"Origin, Content-Type, Accept, Authorization"},
-		AllowMethods:     []string{"GET, POST, HEAD, PUT, DELETE, PATCH"},
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000", "https://fynt.vercel.app"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		AllowMethods:     []string{"GET", "POST", "HEAD", "PUT", "DELETE", "PATCH"},
 		AllowCredentials: true,
-	})
-	router.SetupRoutes(app, cfg, middleware.NewAuthMiddleware(cfg), authHandler, jobsHandler, walletHandler, submissionHandler, transactionHandler, fileUploadHandler)
+	}))
+	router.SetupRoutes(app, cfg, middleware.NewAuthMiddleware(cfg), authHandler, applicationHandler, companyHandler, jobsHandler, walletHandler, submissionHandler, transactionHandler, fileUploadHandler, sectorHandler, educationHandler, experienceHandler, docmentHandler, questionHandler)
 
 	slog.Info("HTTP server started", "port", cfg.AppPort)
 	app.Listen(":" + cfg.AppPort)
