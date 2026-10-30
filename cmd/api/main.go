@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log/slog"
 	"os"
 	"time"
@@ -32,7 +31,6 @@ import (
 	"github.com/gofiber/fiber/v3/middleware/cors"
 	"github.com/gofiber/fiber/v3/middleware/logger"
 	"github.com/gofiber/fiber/v3/middleware/recover"
-	"golang.ngrok.com/ngrok/v2"
 )
 
 // @title Fynt API
@@ -43,36 +41,6 @@ import (
 // @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization
-func connectNgrok(token string) {
-	go func() {
-		if token == "" {
-			slog.Warn("NGROK_AUTHTOKEN tidak ditemukan, ngrok tidak dijalankan")
-			return
-		}
-
-		slog.Info("mencoba start ngrok tunnel...")
-
-		// Buat agent dulu dengan authtoken
-		agent, err := ngrok.NewAgent(ngrok.WithAuthtoken(token))
-		if err != nil {
-			slog.Error("ngrok gagal buat agent", "error", err)
-			return
-		}
-
-		// Forward menggunakan agent
-		fwd, err := agent.Forward(context.Background(),
-			ngrok.WithUpstream("http://localhost:8080"),
-			ngrok.WithURL("https://shininess-stalling-cone.ngrok-free.dev"),
-		)
-		if err != nil {
-			slog.Error("ngrok gagal start", "error", err)
-			return
-		}
-		slog.Info("ngrok tunnel aktif", "url", fwd.URL())
-		<-fwd.Done()
-	}()
-}
-
 func main() {
 	loc, err := time.LoadLocation("Asia/Jakarta")
 	if err == nil {
@@ -138,8 +106,6 @@ func main() {
 	questionHandler := questions.NewQuestionHandler(questionsUsecase)
 	sectorHandler := sectors.NewSectorsHandler(sectorUsecase)
 
-	connectNgrok(cfg.NgrokToken)
-
 	app := fiber.New(fiber.Config{
 		BodyLimit: 20 * 1024 * 1024,
 		ErrorHandler: func(c fiber.Ctx, err error) error {
@@ -166,6 +132,20 @@ func main() {
 	}))
 	router.SetupRoutes(app, cfg, middleware.NewAuthMiddleware(cfg), authHandler, applicationHandler, companyHandler, jobsHandler, walletHandler, submissionHandler, transactionHandler, fileUploadHandler, sectorHandler, educationHandler, experienceHandler, docmentHandler, questionHandler)
 
-	slog.Info("HTTP server started", "port", cfg.AppPort)
-	app.Listen(":" + cfg.AppPort)
+	port := os.Getenv("PORT")
+
+	if port == "" {
+		port = cfg.AppPort
+	}
+
+	if port == "" {
+		port = "8080"
+	}
+
+	slog.Info("HTTP server started", "port", port)
+
+	if err := app.Listen("0.0.0.0:" + port); err != nil {
+		slog.Error("failed to start HTTP server", "error", err)
+		os.Exit(1)
+	}
 }

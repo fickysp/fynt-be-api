@@ -26,7 +26,6 @@ type Config struct {
 	SupabaseKey        string
 	SupabaseBucket     string
 	FrontendURL        string
-	NgrokToken         string
 }
 
 func getEnv(key, fallback string) string {
@@ -67,6 +66,5 @@ func Load() *Config {
 		SupabaseKey:        getEnvOrPanic("SUPABASE_KEY"),
 		SupabaseBucket:     getEnv("SUPABASE_BUCKET", "fynt-documents"),
 		FrontendURL:        getEnv("FRONTEND_URL", "http://localhost:3000"),
-		NgrokToken:         getEnvOrPanic("NGROK_AUTHTOKEN"),
 	}
 }
