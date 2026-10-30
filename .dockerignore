@@ -1,0 +1,17 @@
+.env
+.env.*
+!.env.example
+
+.git/
+.gitignore
+
+*.exe
+*.out
+*.test
+
+tmp/
+temp/
+vendor/
+
+.air.toml
+docker-compose.yml
