@@ -1,0 +1,2273 @@
+basePath: /api/v1
+definitions:
+  github_com_fickysp_fynt-be-api_pkg_response.BaseResponse:
+    properties:
+      data: {}
+      message:
+        example: Berhasil
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse:
+    properties:
+      data: {}
+      message:
+        example: Terjadi kesalahan / Data tidak valid
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
+  internal_applicant.DTOApplicantProfileResponse:
+    properties:
+      about:
+        type: string
+      avatar_url:
+        type: string
+      birth_date:
+        type: string
+      domicile:
+        type: string
+      first_name:
+        type: string
+      gender:
+        type: string
+      id:
+        type: string
+      last_name:
+        type: string
+      web_portfolio_url:
+        type: string
+    type: object
+  internal_applicant.SwaggerGetApplicantResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_applicant.DTOApplicantProfileResponse'
+      message:
+        example: Get data success
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_auth.DTOApplicantRegisterRequest:
+    properties:
+      callback_url:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        minLength: 8
+        type: string
+      phone_number:
+        type: string
+      verify_password:
+        type: string
+    required:
+    - email
+    - first_name
+    - last_name
+    - password
+    - phone_number
+    - verify_password
+    type: object
+  internal_auth.DTOCompanyRegisterRequest:
+    properties:
+      address:
+        type: string
+      callback_url:
+        type: string
+      company_name:
+        type: string
+      domicile:
+        type: string
+      email:
+        type: string
+      owner_name:
+        type: string
+      password:
+        minLength: 8
+        type: string
+      phone_number:
+        type: string
+      sector:
+        type: string
+      verify_password:
+        type: string
+      web_url:
+        type: string
+    required:
+    - address
+    - company_name
+    - domicile
+    - email
+    - owner_name
+    - password
+    - phone_number
+    - sector
+    - verify_password
+    type: object
+  internal_auth.DTOExchangeCodeRequest:
+    properties:
+      code:
+        type: string
+    required:
+    - code
+    type: object
+  internal_auth.DTOLoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 8
+        type: string
+      remember_me:
+        type: boolean
+    required:
+    - email
+    - password
+    type: object
+  internal_auth.DTOLoginResponse:
+    properties:
+      access_token:
+        type: string
+      data:
+        $ref: '#/definitions/internal_auth.DataLogin'
+      role:
+        type: string
+    type: object
+  internal_auth.DTORefreshResponse:
+    properties:
+      access_token:
+        type: string
+    type: object
+  internal_auth.DataLogin:
+    properties:
+      profile: {}
+    type: object
+  internal_auth.SwaggerLoginResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_auth.DTOLoginResponse'
+      message:
+        example: Login berhasil
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_auth.SwaggerRefreshResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_auth.DTORefreshResponse'
+      message:
+        example: Login berhasil
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_company.DTOCompanyRegisterRequest:
+    properties:
+      address:
+        type: string
+      callback_url:
+        type: string
+      company_name:
+        type: string
+      domicile:
+        type: string
+      owner_name:
+        type: string
+      password:
+        minLength: 8
+        type: string
+      phone_number:
+        type: string
+      sector:
+        type: string
+      verify_password:
+        type: string
+      web_url:
+        type: string
+    required:
+    - address
+    - company_name
+    - domicile
+    - owner_name
+    - password
+    - phone_number
+    - sector
+    - verify_password
+    type: object
+  internal_documents.DTODocumentResponse:
+    properties:
+      created_at:
+        type: string
+      documents_type:
+        type: string
+      file_name:
+        type: string
+      file_url:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+    type: object
+  internal_documents.DTOSetActiveDocumentRequest:
+    properties:
+      documents_type:
+        enum:
+        - cv
+        - portfolio
+        type: string
+    required:
+    - documents_type
+    type: object
+  internal_documents.SwaggerDocumentsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/internal_documents.DTODocumentResponse'
+        type: array
+      message:
+        example: Get data success
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_education.DTOEducationRequest:
+    properties:
+      degree:
+        type: string
+      field_of_study:
+        type: string
+      institution:
+        type: string
+      periode:
+        type: string
+    type: object
+  internal_education.DTOUpdateEducationRequest:
+    properties:
+      degree:
+        type: string
+      field_of_study:
+        type: string
+      institution:
+        type: string
+      periode:
+        type: string
+    type: object
+  internal_education.Education:
+    properties:
+      applicant_id:
+        type: string
+      created_at:
+        type: string
+      degree:
+        type: string
+      field_of_study:
+        type: string
+      id:
+        type: string
+      institution:
+        type: string
+      periode:
+        type: string
+    type: object
+  internal_education.SwaggerEducationsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/internal_education.Education'
+        type: array
+      message:
+        example: Get data success
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_experiences.DTOExperienceRequest:
+    properties:
+      company_name:
+        type: string
+      jobdesc:
+        type: string
+      periode:
+        type: string
+      position:
+        type: string
+    type: object
+  internal_experiences.DTOUpdateExperienceRequest:
+    properties:
+      company_name:
+        type: string
+      jobdesc:
+        type: string
+      periode:
+        type: string
+      position:
+        type: string
+    type: object
+  internal_experiences.Experience:
+    properties:
+      applicant_id:
+        type: string
+      company_name:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      jobdesc:
+        type: string
+      periode:
+        type: string
+      position:
+        type: string
+    type: object
+  internal_experiences.SwaggerExperiencesResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/internal_experiences.Experience'
+        type: array
+      message:
+        example: Get data success
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_fileuploads.SwaggerUploadResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_fileuploads.UploadResponseData'
+      message:
+        example: File uploaded successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_fileuploads.UploadResponseData:
+    properties:
+      file_name:
+        type: string
+      file_size:
+        type: integer
+      file_url:
+        type: string
+    type: object
+  internal_jobs.DTOJobCategoryResponses:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  internal_jobs.DTOJobRequest:
+    properties:
+      employment:
+        type: string
+      essay_questions:
+        items:
+          type: string
+        maxItems: 5
+        type: array
+      extend_coins:
+        type: integer
+      job_category_id:
+        type: string
+      jobdesc:
+        type: string
+      location:
+        type: string
+      position:
+        type: string
+      salary_desc:
+        type: string
+      slot:
+        type: integer
+      workplace:
+        type: string
+    required:
+    - employment
+    - essay_questions
+    - job_category_id
+    - jobdesc
+    - location
+    - position
+    - salary_desc
+    - workplace
+    type: object
+  internal_jobs.DTOJobSearchResponses:
+    properties:
+      closing_date:
+        type: string
+      coin_applyment:
+        type: integer
+      company_name:
+        type: string
+      employment:
+        type: string
+      filled_slot:
+        type: integer
+      id:
+        type: string
+      location:
+        type: string
+      position:
+        type: string
+      salary_desc:
+        type: string
+      slot:
+        type: integer
+      status:
+        type: string
+      workplace:
+        type: string
+    type: object
+  internal_jobs.DTOJobSummaryResponses:
+    properties:
+      active_jobs:
+        type: integer
+      all_jobs:
+        type: integer
+      close_jobs:
+        type: integer
+      submissions_in_active_job:
+        type: integer
+      submissions_in_review:
+        type: integer
+      total_submissions:
+        type: integer
+    type: object
+  internal_jobs.DTOJobsResponses:
+    properties:
+      closing_date:
+        type: string
+      coin_applyment:
+        type: integer
+      company_id:
+        type: string
+      created_at:
+        type: string
+      employment:
+        type: string
+      filled_slot:
+        type: integer
+      id:
+        type: string
+      job_category_id:
+        type: string
+      jobdesc:
+        type: string
+      location:
+        type: string
+      position:
+        type: string
+      salary_desc:
+        type: string
+      slot:
+        type: integer
+      status:
+        type: string
+      updated_at:
+        type: string
+      workplace:
+        type: string
+    type: object
+  internal_jobs.DTOUpdateJobRequest:
+    properties:
+      employment:
+        type: string
+      essay_questions:
+        items:
+          type: string
+        type: array
+      extend_coins:
+        type: integer
+      image_url:
+        type: string
+      job_category_id:
+        type: string
+      jobdesc:
+        type: string
+      location:
+        type: string
+      position:
+        type: string
+      salary_desc:
+        type: string
+      slot:
+        type: integer
+      workplace:
+        type: string
+    type: object
+  internal_jobs.SwaggerJobCategoriesResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/internal_jobs.DTOJobCategoryResponses'
+        type: array
+      message:
+        example: Get data success
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_jobs.SwaggerJobResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_jobs.DTOJobsResponses'
+      message:
+        example: Get data success
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_jobs.SwaggerJobSearchResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/internal_jobs.DTOJobSearchResponses'
+        type: array
+      message:
+        example: Get data success
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_jobs.SwaggerJobSummaryResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_jobs.DTOJobSummaryResponses'
+      message:
+        example: Get data success
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_jobs.SwaggerJobsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/internal_jobs.DTOJobsResponses'
+        type: array
+      message:
+        example: Get data success
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_questions.DTOUpdateQuestion:
+    properties:
+      questions_detail:
+        type: string
+    required:
+    - questions_detail
+    type: object
+  internal_questions.Questions:
+    properties:
+      id:
+        type: string
+      job_id:
+        type: string
+      questions_detail:
+        type: string
+    type: object
+  internal_questions.SwaggerQuestionsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/internal_questions.Questions'
+        type: array
+      message:
+        example: Get data success
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_sectors.Sector:
+    properties:
+      id:
+        type: string
+      sector_name:
+        type: string
+    type: object
+  internal_sectors.SwaggerSectorsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/internal_sectors.Sector'
+        type: array
+      message:
+        example: Get data success
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_submissions.ApplyJobRequest:
+    properties:
+      answers:
+        items:
+          $ref: '#/definitions/internal_submissions.EssayAnswerRequest'
+        type: array
+      files:
+        items:
+          $ref: '#/definitions/internal_submissions.DTOSubmissionFile'
+        minItems: 1
+        type: array
+      job_id:
+        type: string
+      web_portfolio_url:
+        type: string
+    required:
+    - files
+    type: object
+  internal_submissions.DTOEssayAnswer:
+    properties:
+      answer:
+        type: string
+      question:
+        type: string
+    type: object
+  internal_submissions.DTORecruiterSubmissionList:
+    properties:
+      answers:
+        items:
+          $ref: '#/definitions/internal_submissions.DTOEssayAnswer'
+        type: array
+      applicant_email:
+        type: string
+      applicant_name:
+        type: string
+      applicant_phone:
+        type: string
+      applied_at:
+        type: string
+      cv_doc_url:
+        type: string
+      internal_notes:
+        type: string
+      portfolio_doc_url:
+        type: string
+      portfolio_link_web:
+        type: string
+      status:
+        type: string
+      submission_id:
+        type: string
+    type: object
+  internal_submissions.DTOSeekerSubmissionDetail:
+    properties:
+      applied_at:
+        type: string
+      cv_doc_name:
+        type: string
+      cv_doc_url:
+        type: string
+      portfolio_doc_name:
+        type: string
+      portfolio_doc_url:
+        type: string
+      portfolio_link_web:
+        type: string
+      status:
+        type: string
+    type: object
+  internal_submissions.DTOSeekerSubmissionResponse:
+    properties:
+      applied_at:
+        type: string
+      company_name:
+        type: string
+      id:
+        type: string
+      location:
+        type: string
+      position:
+        type: string
+      status:
+        type: string
+      workplace:
+        type: string
+    type: object
+  internal_submissions.DTOSubmissionFile:
+    properties:
+      file_name:
+        type: string
+      file_size_bytes:
+        type: integer
+      file_type:
+        enum:
+        - cv
+        - portfolio
+        type: string
+      file_url:
+        type: string
+    required:
+    - file_name
+    - file_size_bytes
+    - file_type
+    - file_url
+    type: object
+  internal_submissions.DTOUpdateNotesRequest:
+    properties:
+      internal_notes:
+        type: string
+    required:
+    - internal_notes
+    type: object
+  internal_submissions.DTOUpdateStatusRequest:
+    properties:
+      status:
+        enum:
+        - Not Reviewed
+        - Shortlist
+        - Rejected
+        type: string
+    required:
+    - status
+    type: object
+  internal_submissions.EssayAnswerRequest:
+    properties:
+      answer:
+        type: string
+      question_id:
+        type: string
+    required:
+    - answer
+    - question_id
+    type: object
+  internal_submissions.SwaggerRecruiterSubmissionsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/internal_submissions.DTORecruiterSubmissionList'
+        type: array
+      message:
+        example: Get data success
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_submissions.SwaggerSeekerSubmissionsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/internal_submissions.DTOSeekerSubmissionResponse'
+        type: array
+      message:
+        example: Get data success
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_submissions.SwaggerSubmissionDetailResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_submissions.DTOSeekerSubmissionDetail'
+      message:
+        example: Get data success
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_transaction.DTOMidtransNotification:
+    properties:
+      fraud_status:
+        type: string
+      gross_amount:
+        type: string
+      order_id:
+        type: string
+      payment_type:
+        type: string
+      transaction_status:
+        type: string
+    type: object
+  internal_wallet.DTOBalanceResponse:
+    properties:
+      balance:
+        type: integer
+    type: object
+  internal_wallet.DTOTopUpRequest:
+    properties:
+      account_id:
+        type: string
+      amount:
+        minimum: 10000
+        type: integer
+    required:
+    - amount
+    type: object
+  internal_wallet.DTOTopUpResponse:
+    properties:
+      amount:
+        type: integer
+      order_id:
+        type: string
+      snap_token:
+        type: string
+      snap_url:
+        type: string
+    type: object
+  internal_wallet.SwaggerBalanceResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_wallet.DTOBalanceResponse'
+      message:
+        example: Get data success
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_wallet.SwaggerTopUpResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_wallet.DTOTopUpResponse'
+      message:
+        example: Top-up request created
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: REST API untuk sistem rekrutmen Fynt (Seeker & Recruiter).
+  title: Fynt API
+  version: "1.0"
+paths:
+  /api/v1/auth/exchange:
+    post:
+      consumes:
+      - application/json
+      description: Memvalidasi one-time code untuk mendapatkan access token JWT
+      parameters:
+      - description: Exchange Code Payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_auth.DTOExchangeCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Penukaran token berhasil
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+        "400":
+          description: Format JSON tidak valid
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "401":
+          description: Kode penukaran tidak valid atau sudah kadaluwarsa
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      summary: Exchange OAuth Code
+      tags:
+      - Auth
+  /api/v1/auth/google/callback:
+    get:
+      description: Memproses callback autentikasi Google
+      parameters:
+      - description: OAuth state
+        in: query
+        name: state
+        required: true
+        type: string
+      - description: OAuth authorization code
+        in: query
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "302":
+          description: Redirect after authentication
+        "400":
+          description: Data state atau role tidak valid
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "401":
+          description: User tidak diketahui
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Gagal memproses profil Google
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "502":
+          description: Layanan profil Google tidak tersedia
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      summary: Google OAuth Callback
+      tags:
+      - Auth
+  /api/v1/auth/google/login:
+    get:
+      description: Mengarahkan pengguna ke halaman login Google
+      parameters:
+      - description: User role (seeker/recruiter)
+        in: query
+        name: role
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "302":
+          description: Redirect to Google
+        "400":
+          description: Role user tidak valid
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Gagal generate PKCE
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      summary: Login with Google
+      tags:
+      - Auth
+  /api/v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Melakukan login pengguna
+      parameters:
+      - description: Payload login
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_auth.DTOLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login berhasil
+          schema:
+            $ref: '#/definitions/internal_auth.SwaggerLoginResponse'
+        "400":
+          description: Format JSON atau data tidak valid
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "401":
+          description: Email atau password salah
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "404":
+          description: User tidak ditemukan
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      summary: Login
+      tags:
+      - Auth
+  /api/v1/auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Mengeluarkan pengguna dari sesi aktif
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Logout berhasil
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+        "401":
+          description: User tidak diketahui / tidak diautentikasi
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Gagal memproses logout
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Logout
+      tags:
+      - Auth
+  /api/v1/auth/register/recruiter:
+    post:
+      consumes:
+      - application/json
+      description: Mendaftarkan akun recruiter
+      parameters:
+      - description: Payload Registrasi Recruiter / Perusahaan
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_auth.DTOCompanyRegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Registrasi berhasil
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+        "400":
+          description: Body request tidak valid
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "409":
+          description: Alamat email sudah digunakan
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      summary: Register Recruiter
+      tags:
+      - Auth
+  /api/v1/auth/register/seeker:
+    post:
+      consumes:
+      - application/json
+      description: Mendaftarkan akun seeker
+      parameters:
+      - description: Payload Registrasi Job Seeker
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_auth.DTOApplicantRegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Registrasi berhasil
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+        "400":
+          description: Body request atau data tidak valid
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "409":
+          description: Alamat email sudah digunakan
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      summary: Register Seeker
+      tags:
+      - Auth
+  /api/v1/categories:
+    get:
+      description: Mengambil seluruh kategori pekerjaan
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sukses mengambil data
+          schema:
+            $ref: '#/definitions/internal_jobs.SwaggerJobCategoriesResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      summary: Get All Categories
+      tags:
+      - Jobs
+  /api/v1/job:
+    post:
+      consumes:
+      - application/json
+      description: Membuat lowongan pekerjaan
+      parameters:
+      - description: Job payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_jobs.DTOJobRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Lowongan berhasil dibuat
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+        "400":
+          description: Format JSON atau data tidak valid
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create Job
+      tags:
+      - Jobs
+  /api/v1/job/{id}:
+    get:
+      description: Mengambil detail lowongan berdasarkan ID
+      parameters:
+      - description: Job ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sukses mengambil data
+          schema:
+            $ref: '#/definitions/internal_jobs.SwaggerJobResponse'
+        "404":
+          description: Job not found
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      summary: Get Job By ID
+      tags:
+      - Jobs
+    patch:
+      consumes:
+      - application/json
+      description: Mengubah lowongan pekerjaan
+      parameters:
+      - description: Job ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Job update payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_jobs.DTOUpdateJobRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lowongan berhasil diperbarui
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+        "400":
+          description: Format JSON atau data tidak valid
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update Job
+      tags:
+      - Jobs
+  /api/v1/job/{id}/apply:
+    post:
+      consumes:
+      - application/json
+      description: Mengirim lamaran pekerjaan
+      parameters:
+      - description: Job ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Application payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_submissions.ApplyJobRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Berhasil melamar pekerjaan
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+        "400":
+          description: Format JSON atau data tidak valid
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "402":
+          description: Koin tidak cukup
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "404":
+          description: Lowongan atau user tidak ditemukan
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "409":
+          description: Lowongan sudah ditutup
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Apply Job
+      tags:
+      - Submissions
+  /api/v1/job/search:
+    get:
+      description: Mencari lowongan pekerjaan
+      parameters:
+      - description: Search keyword
+        in: query
+        name: q
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sukses mengambil data
+          schema:
+            $ref: '#/definitions/internal_jobs.SwaggerJobSearchResponse'
+        "400":
+          description: Kata kunci pencarian minimal 3 karakter
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Gagal mencari lowongan
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      summary: Search Jobs
+      tags:
+      - Jobs
+  /api/v1/jobs:
+    get:
+      description: Mengambil seluruh lowongan pekerjaan
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sukses mengambil data
+          schema:
+            $ref: '#/definitions/internal_jobs.SwaggerJobsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      summary: Get All Jobs
+      tags:
+      - Jobs
+  /api/v1/questions:
+    get:
+      description: Mengambil pertanyaan essay pada lowongan
+      parameters:
+      - description: Job ID
+        in: query
+        name: job_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sukses mengambil data
+          schema:
+            $ref: '#/definitions/internal_questions.SwaggerQuestionsResponse'
+        "400":
+          description: Format Job ID tidak valid
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      summary: Get Questions
+      tags:
+      - Questions
+  /api/v1/questions/{id}:
+    delete:
+      description: Menghapus pertanyaan essay
+      parameters:
+      - description: Question ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Pertanyaan berhasil dihapus
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+        "400":
+          description: Invalid question ID
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete Question
+      tags:
+      - Questions
+    put:
+      consumes:
+      - application/json
+      description: Mengubah pertanyaan essay
+      parameters:
+      - description: Question ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Question update payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_questions.DTOUpdateQuestion'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Pertanyaan berhasil diperbarui
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+        "400":
+          description: Format data tidak valid
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update Question
+      tags:
+      - Questions
+  /api/v1/recruiter/dashboard/stats:
+    get:
+      description: Mengambil statistik dashboard recruiter
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sukses mengambil data
+          schema:
+            $ref: '#/definitions/internal_jobs.SwaggerJobSummaryResponse'
+        "500":
+          description: Gagal mengambil statistik dasbor
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Job Summary
+      tags:
+      - Recruiter
+  /api/v1/recruiter/on-boarding:
+    post:
+      consumes:
+      - application/json
+      description: Membuat profile perusahaan recruiter
+      parameters:
+      - description: Payload untuk membuat profile company baru
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_company.DTOCompanyRegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Company registered successfully
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+        "400":
+          description: Body request tidak valid
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create Company Profile
+      tags:
+      - Recruiter
+  /api/v1/recruiter/profile:
+    patch:
+      consumes:
+      - multipart/form-data
+      description: Mengubah profile perusahaan beserta avatar
+      parameters:
+      - description: Nama perusahaan
+        in: formData
+        name: company_name
+        type: string
+      - description: Sector ID
+        in: formData
+        name: sector
+        type: string
+      - description: Domisili Perusahaan
+        in: formData
+        name: domicile
+        type: string
+      - description: Situs Web Perusahaan
+        in: formData
+        name: web_url
+        type: string
+      - description: Alamat Lengkap Perusahaan
+        in: formData
+        name: address
+        type: string
+      - description: Nama Pemilik / Penanggung Jawab
+        in: formData
+        name: owner_name
+        type: string
+      - description: Deskripsi Singkat Perusahaan
+        in: formData
+        name: description
+        type: string
+      - description: Foto Logo / Avatar Perusahaan
+        in: formData
+        name: avatar
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Profil perusahaan berhasil diperbarui
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+        "400":
+          description: Invalid form request
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "403":
+          description: Invalid user id
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update Company Profile
+      tags:
+      - Recruiter
+  /api/v1/refresh-token:
+    post:
+      consumes:
+      - application/json
+      description: Membuat access token baru dari refresh token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil mendapatkan access token
+          schema:
+            $ref: '#/definitions/internal_auth.SwaggerRefreshResponse'
+        "400":
+          description: Refresh token tidak ditemukan
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "401":
+          description: Unauthorized refresh token
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      summary: Refresh Token
+      tags:
+      - Auth
+  /api/v1/sectors:
+    get:
+      description: Mengambil seluruh sektor pekerjaan
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sukses mengambil data
+          schema:
+            $ref: '#/definitions/internal_sectors.SwaggerSectorsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      summary: Get All Sectors
+      tags:
+      - Sectors
+  /api/v1/seeker/documents:
+    get:
+      description: Mengambil seluruh dokumen seeker
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Get data success
+          schema:
+            $ref: '#/definitions/internal_documents.SwaggerDocumentsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Documents
+      tags:
+      - Documents
+    post:
+      consumes:
+      - multipart/form-data
+      description: Mengunggah dokumen seeker
+      parameters:
+      - description: Document type
+        enum:
+        - cv
+        - portfolio
+        in: formData
+        name: documents_type
+        required: true
+        type: string
+      - description: Document file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Document uploaded
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+        "400":
+          description: Invalid document request
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Upload Document
+      tags:
+      - Documents
+  /api/v1/seeker/documents/{id}:
+    delete:
+      description: Menghapus dokumen seeker
+      parameters:
+      - description: Document ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Document deleted
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete Document
+      tags:
+      - Documents
+  /api/v1/seeker/documents/{id}/set-active:
+    patch:
+      consumes:
+      - application/json
+      description: Menetapkan dokumen aktif seeker
+      parameters:
+      - description: Document ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Payload dokumen aktif
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_documents.DTOSetActiveDocumentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Document activated
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+        "400":
+          description: Format data tidak valid
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Set Active Document
+      tags:
+      - Documents
+  /api/v1/seeker/educations:
+    get:
+      description: Mengambil daftar pendidikan seeker
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Get data success
+          schema:
+            $ref: '#/definitions/internal_education.SwaggerEducationsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Educations
+      tags:
+      - Education
+    post:
+      consumes:
+      - application/json
+      description: Menambahkan pendidikan seeker
+      parameters:
+      - description: Education payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_education.DTOEducationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Education added
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+        "400":
+          description: Invalid JSON format
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Add Education
+      tags:
+      - Education
+  /api/v1/seeker/educations/{id}:
+    delete:
+      description: Menghapus pendidikan seeker
+      parameters:
+      - description: Education ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Education deleted
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete Education
+      tags:
+      - Education
+    patch:
+      consumes:
+      - application/json
+      description: Mengubah pendidikan seeker
+      parameters:
+      - description: Education ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Education update payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_education.DTOUpdateEducationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Education updated
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+        "400":
+          description: Format data tidak valid
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update Education
+      tags:
+      - Education
+  /api/v1/seeker/experiences:
+    get:
+      description: Mengambil daftar pengalaman kerja seeker
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Get data success
+          schema:
+            $ref: '#/definitions/internal_experiences.SwaggerExperiencesResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Experiences
+      tags:
+      - Experience
+    post:
+      consumes:
+      - application/json
+      description: Menambahkan pengalaman kerja seeker
+      parameters:
+      - description: Experience payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_experiences.DTOExperienceRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Experience added
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+        "400":
+          description: Invalid JSON format
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Add Experience
+      tags:
+      - Experience
+  /api/v1/seeker/experiences/{id}:
+    delete:
+      description: Menghapus pengalaman kerja seeker
+      parameters:
+      - description: Experience ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Experience removed
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete Experience
+      tags:
+      - Experience
+    patch:
+      consumes:
+      - application/json
+      description: Mengubah pengalaman kerja seeker
+      parameters:
+      - description: Experience ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Experience update payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_experiences.DTOUpdateExperienceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Experience updated
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+        "400":
+          description: Format data tidak valid
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update Experience
+      tags:
+      - Experience
+  /api/v1/seeker/profile:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil data detail profile pengguna yang sedang login
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Data user berhasil diambil
+          schema:
+            $ref: '#/definitions/internal_applicant.SwaggerGetApplicantResponse'
+        "403":
+          description: ID user tidak valid
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "404":
+          description: User tidak ditemukan
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Profile Applicant/Job Seeker
+      tags:
+      - Seeker
+    patch:
+      consumes:
+      - multipart/form-data
+      description: Mengubah data profile pengguna beserta foto avatar
+      parameters:
+      - description: Nama Depan
+        in: formData
+        name: first_name
+        type: string
+      - description: Nama Belakang
+        in: formData
+        name: last_name
+        type: string
+      - description: Jenis Kelamin (male/female)
+        in: formData
+        name: gender
+        type: string
+      - description: Tanggal Lahir (DD/MM/YYYY)
+        in: formData
+        name: birth_date
+        type: string
+      - description: Domisili
+        in: formData
+        name: domicile
+        type: string
+      - description: Tentang Saya
+        in: formData
+        name: about
+        type: string
+      - description: URL Portofolio
+        in: formData
+        name: web_portfolio_url
+        type: string
+      - description: Foto Profil / Avatar (Max 2MB)
+        in: formData
+        name: avatar
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sukses update data profile
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+        "400":
+          description: Format request, file, atau validasi input tidak sesuai
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "403":
+          description: ID user tidak valid
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update Profile Applicant/Job Seeker
+      tags:
+      - Seeker
+  /api/v1/seeker/submissions:
+    get:
+      description: Mengambil daftar lamaran seeker
+      parameters:
+      - description: Submission status
+        in: query
+        name: status
+        type: string
+      - description: Search keyword
+        in: query
+        name: q
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sukses mengambil data
+          schema:
+            $ref: '#/definitions/internal_submissions.SwaggerSeekerSubmissionsResponse'
+        "500":
+          description: Gagal mengambil lamaran
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get My Submissions
+      tags:
+      - Submissions
+  /api/v1/seeker/submissions/{id}:
+    get:
+      description: Mengambil detail lamaran seeker
+      parameters:
+      - description: Submission ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sukses mengambil data
+          schema:
+            $ref: '#/definitions/internal_submissions.SwaggerSubmissionDetailResponse'
+        "404":
+          description: Detail lamaran tidak ditemukan
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Submission Detail
+      tags:
+      - Submissions
+  /api/v1/submissions/{id}/notes:
+    patch:
+      consumes:
+      - application/json
+      description: Menyimpan catatan internal lamaran
+      parameters:
+      - description: Submission ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Internal notes payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_submissions.DTOUpdateNotesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Catatan internal berhasil disimpan
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+        "400":
+          description: Format data tidak valid
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "403":
+          description: Lamaran tidak ditemukan, atau tidak memiliki akses
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update Internal Notes
+      tags:
+      - Submissions
+  /api/v1/submissions/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      description: Mengubah status lamaran
+      parameters:
+      - description: Submission ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Status update payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_submissions.DTOUpdateStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Status lamaran berhasil diperbarui
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+        "400":
+          description: Format data tidak valid
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "403":
+          description: Lamaran tidak ditemukan, atau tidak punya akses
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update Submission Status
+      tags:
+      - Submissions
+  /api/v1/submissions/job/{job_id}:
+    get:
+      description: Mengambil daftar pelamar pada lowongan recruiter
+      parameters:
+      - description: Job ID
+        in: path
+        name: job_id
+        required: true
+        type: string
+      - description: Submission status
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sukses mengambil data
+          schema:
+            $ref: '#/definitions/internal_submissions.SwaggerRecruiterSubmissionsResponse'
+        "500":
+          description: Gagal mengambil daftar pelamar
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Submissions By Job
+      tags:
+      - Submissions
+  /api/v1/transaction/notification:
+    post:
+      consumes:
+      - application/json
+      description: Menerima notifikasi transaksi dari Midtrans
+      parameters:
+      - description: Midtrans notification payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_transaction.DTOMidtransNotification'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sukses memproses notifikasi diproses
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+        "400":
+          description: Payload notifikasi tidak valid
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      summary: Midtrans Notification
+      tags:
+      - Transaction
+  /api/v1/upload/document:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Mengunggah dokumen PDF
+      parameters:
+      - description: PDF document
+        in: formData
+        name: document
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Document uploaded successfully
+          schema:
+            $ref: '#/definitions/internal_fileuploads.SwaggerUploadResponse'
+        "400":
+          description: Invalid document
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+        "500":
+          description: Upload failed
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Upload PDF Document
+      tags:
+      - File Uploads
+  /api/v1/upload/picture:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Mengunggah gambar profil
+      parameters:
+      - description: Image file
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Image uploaded successfully
+          schema:
+            $ref: '#/definitions/internal_fileuploads.SwaggerUploadResponse'
+        "400":
+          description: Invalid image
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+        "500":
+          description: Upload failed
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Upload Picture
+      tags:
+      - File Uploads
+  /api/v1/wallet/balance:
+    get:
+      description: Mengambil saldo wallet pengguna
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Get data success
+          schema:
+            $ref: '#/definitions/internal_wallet.SwaggerBalanceResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Wallet Balance
+      tags:
+      - Wallet
+  /api/v1/wallet/top-up:
+    post:
+      consumes:
+      - application/json
+      description: Membuat permintaan top up wallet
+      parameters:
+      - description: Top-up payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_wallet.DTOTopUpRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Top-up request created
+          schema:
+            $ref: '#/definitions/internal_wallet.SwaggerTopUpResponse'
+        "400":
+          description: Invalid request atau minimal top-up tidak terpenuhi
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_fickysp_fynt-be-api_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Top Up Wallet
+      tags:
+      - Wallet
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
