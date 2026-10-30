@@ -50,10 +50,10 @@ CREATE TABLE applicants (
     last_name VARCHAR(255),  
     gender VARCHAR(50),
     birth_date DATE,
+    about VARCHAR,
     domicile VARCHAR(255),
     avatar_url VARCHAR(500),
-    resume_url VARCHAR(500),
-    portfolio_url VARCHAR(500),
+    web_portfolio_url VARCHAR(500),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -62,6 +62,7 @@ CREATE TABLE transactions(
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     account_id UUID NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
     order_id VARCHAR(255) NOT NULL,
+    coin_amount BIGINT NOT NULL,
     amount BIGINT NOT NULL,
     payment_type VARCHAR(100),
     status payment_status_enum NOT NULL DEFAULT 'pending',
@@ -118,6 +119,8 @@ CREATE TABLE submissions(
     internal_notes TEXT,
     applied_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    reviewed_at TIMESTAMP WITH TIME ZONE,
+    decided_at TIMESTAMP WITH TIME ZONE,
     UNIQUE(applicant_id, job_id)
 );
 
@@ -141,12 +144,10 @@ CREATE TABLE essay_answer(
 CREATE TABLE educations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     applicant_id UUID NOT NULL REFERENCES applicants(id) ON DELETE CASCADE,
-    school_name VARCHAR(255) NOT NULL,
+    institution VARCHAR(255) NOT NULL,
     degree VARCHAR(100) NOT NULL, 
     field_of_study VARCHAR(255),
-    start_date DATE NOT NULL,
-    end_date DATE, 
-    description TEXT,
+    periode VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -155,8 +156,27 @@ CREATE TABLE experience (
     applicant_id UUID NOT NULL REFERENCES applicants(id) ON DELETE CASCADE,
     position VARCHAR(255) NOT NULL,
     company_name VARCHAR(255) NOT NULL,
-    start_date DATE NOT NULL,
-    end_date DATE,
-    current_job BOOLEAN DEFAULT false,
-    jobdesc TEXT
+    periode VARCHAR(255) NOT NULL,
+    jobdesc TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE documents(
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    applicant_id UUID NOT NULL REFERENCES applicants(id) ON DELETE CASCADE,
+    documents_type VARCHAR(50) NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    file_url TEXT NOT NULL,
+    is_active BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS oauth_exchange_codes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    code VARCHAR(255) NOT NULL UNIQUE,
+    token TEXT NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_oauth_exchange_codes_code ON oauth_exchange_codes(code);
+
