@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"strings"
 
+	"github.com/fickysp/fynt-be-api/pkg/response"
 	"github.com/fickysp/fynt-be-api/pkg/storage"
 	"github.com/gofiber/fiber/v3"
 )
@@ -18,6 +19,17 @@ func NewFileUploadsHandler(sc storage.SupabaseStorage) *FileUploadsHandler {
 	}
 }
 
+// @Summary Upload PDF Document
+// @Description Mengunggah dokumen PDF
+// @Tags File Uploads
+// @Accept multipart/form-data
+// @Produce json
+// @Security BearerAuth
+// @Param document formData file true "PDF document"
+// @Success 200 {object} SwaggerUploadResponse "Document uploaded successfully"
+// @Failure 400 {object} response.BaseResponse "Invalid document"
+// @Failure 500 {object} response.BaseResponse "Upload failed"
+// @Router /api/v1/upload/document [post]
 func (h *FileUploadsHandler) UploadDocument(c fiber.Ctx) error {
 	file, err := c.FormFile("document")
 	if err != nil {
@@ -25,9 +37,10 @@ func (h *FileUploadsHandler) UploadDocument(c fiber.Ctx) error {
 			"field", "document",
 			"error", err,
 		)
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"success": false,
-			"message": "Missing uploaded document. Please provide a PDF file using the 'document' form field.",
+		return c.Status(fiber.StatusBadRequest).JSON(response.BaseResponse{
+			Success: false,
+			Message: "Missing uploaded document. Please provide a PDF file using the 'document' form field.",
+			Data:    nil,
 		})
 	}
 
@@ -37,10 +50,7 @@ func (h *FileUploadsHandler) UploadDocument(c fiber.Ctx) error {
 			"file_name", file.Filename,
 			"content_type", file.Header.Get("Content-Type"),
 		)
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"success": false,
-			"message": "Invalid document type. Only PDF files are allowed.",
-		})
+		return c.Status(fiber.StatusBadRequest).JSON(response.BaseResponse{Success: false, Message: "Invalid document type. Only PDF files are allowed.", Data: nil})
 	}
 
 	fileURL, err := h.storageClient.UploadFile(file, "resumes")
@@ -50,10 +60,7 @@ func (h *FileUploadsHandler) UploadDocument(c fiber.Ctx) error {
 			"file_size", file.Size,
 			"error", err,
 		)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"success": false,
-			"message": "Failed to upload document. Please try again later.",
-		})
+		return c.Status(fiber.StatusInternalServerError).JSON(response.BaseResponse{Success: false, Message: "Failed to upload document. Please try again later.", Data: nil})
 	}
 
 	slog.Info("document uploaded successfully",
@@ -61,16 +68,24 @@ func (h *FileUploadsHandler) UploadDocument(c fiber.Ctx) error {
 		"file_size", file.Size,
 		"storage_folder", "resumes",
 	)
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"success": true,
-		"message": "Document uploaded successfully.",
-		"data": map[string]interface{}{
-			"file_url":  fileURL,
-			"file_name": file.Filename,
-			"file_size": file.Size,
-		},
+	return c.Status(fiber.StatusOK).JSON(SwaggerUploadResponse{
+		Success: true,
+		Message: "Document uploaded successfully.",
+		Data:    UploadResponseData{FileURL: fileURL, FileName: file.Filename, FileSize: file.Size},
 	})
 }
+
+// @Summary Upload Picture
+// @Description Mengunggah gambar profil
+// @Tags File Uploads
+// @Accept multipart/form-data
+// @Produce json
+// @Security BearerAuth
+// @Param image formData file true "Image file"
+// @Success 200 {object} SwaggerUploadResponse "Image uploaded successfully"
+// @Failure 400 {object} response.BaseResponse "Invalid image"
+// @Failure 500 {object} response.BaseResponse "Upload failed"
+// @Router /api/v1/upload/picture [post]
 func (h *FileUploadsHandler) UploadPicture(c fiber.Ctx) error {
 	file, err := c.FormFile("image")
 	if err != nil {
@@ -78,10 +93,7 @@ func (h *FileUploadsHandler) UploadPicture(c fiber.Ctx) error {
 			"field", "image",
 			"error", err,
 		)
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"success": false,
-			"message": "Missing uploaded image. Please provide a PNG, JPG, or JPEG file using the 'image' form field.",
-		})
+		return c.Status(fiber.StatusBadRequest).JSON(response.BaseResponse{Success: false, Message: "Missing uploaded image. Please provide a PNG, JPG, or JPEG file using the 'image' form field.", Data: nil})
 	}
 
 	fileName := strings.ToLower(file.Filename)
@@ -90,10 +102,7 @@ func (h *FileUploadsHandler) UploadPicture(c fiber.Ctx) error {
 			"file_name", file.Filename,
 			"content_type", file.Header.Get("Content-Type"),
 		)
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"success": false,
-			"message": "Invalid image type. Only PNG, JPG, and JPEG files are allowed.",
-		})
+		return c.Status(fiber.StatusBadRequest).JSON(response.BaseResponse{Success: false, Message: "Invalid image type. Only PNG, JPG, and JPEG files are allowed.", Data: nil})
 	}
 
 	fileURL, err := h.storageClient.UploadFile(file, "images")
@@ -103,10 +112,7 @@ func (h *FileUploadsHandler) UploadPicture(c fiber.Ctx) error {
 			"file_size", file.Size,
 			"error", err,
 		)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"success": false,
-			"message": "Failed to upload image. Please try again later.",
-		})
+		return c.Status(fiber.StatusInternalServerError).JSON(response.BaseResponse{Success: false, Message: "Failed to upload image. Please try again later.", Data: nil})
 	}
 
 	slog.Info("image uploaded successfully",
@@ -114,13 +120,9 @@ func (h *FileUploadsHandler) UploadPicture(c fiber.Ctx) error {
 		"file_size", file.Size,
 		"storage_folder", "images",
 	)
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"success": true,
-		"message": "Image uploaded successfully.",
-		"data": map[string]interface{}{
-			"file_url":  fileURL,
-			"file_name": file.Filename,
-			"file_size": file.Size,
-		},
+	return c.Status(fiber.StatusOK).JSON(SwaggerUploadResponse{
+		Success: true,
+		Message: "Image uploaded successfully.",
+		Data:    UploadResponseData{FileURL: fileURL, FileName: file.Filename, FileSize: file.Size},
 	})
 }

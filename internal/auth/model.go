@@ -85,9 +85,32 @@ type DataLogin struct {
 type DTOLoginResponse struct {
 	AccessToken  string    `json:"access_token"`
 	RefreshToken string    `json:"-"`
+	Role         string    `json:"role"`
 	Data         DataLogin `json:"data"`
 }
 
 type DTORefreshResponse struct {
 	AccessToken string `json:"access_token"`
+}
+
+type DTOGoogleUserInfo struct {
+	Email         string `json:"email"`
+	GivenName     string `json:"given_name"`
+	FamilyName    string `json:"family_name"`
+	Picture       string `json:"picture"`
+	VerifiedEmail bool   `json:"verified_email"`
+}
+type DTOExchangeCodeRequest struct {
+	Code string `json:"code" validate:"required"`
+}
+
+type SwaggerLoginResponse struct {
+	Success bool              `json:"success" example:"true"`
+	Message string            `json:"message" example:"Login berhasil"`
+	Data    *DTOLoginResponse `json:"data"`
+}
+type SwaggerRefreshResponse struct {
+	Success bool                `json:"success" example:"true"`
+	Message string              `json:"message" example:"Login berhasil"`
+	Data    *DTORefreshResponse `json:"data"`
 }
