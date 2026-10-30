@@ -11,13 +11,14 @@ import (
 type SectorRepository interface {
 	Create(ctx context.Context, secName string) (string, error)
 	GetSectorByName(ctx context.Context, name string) (*Sector, error)
+	GetAllSectors(ctx context.Context) ([]Sector, error)
 }
 
 type sectorRepository struct {
 	db *sqlx.DB
 }
 
-func NewSectorReporitory(db *sqlx.DB) SectorRepository {
+func NewSectorRepository(db *sqlx.DB) SectorRepository {
 	return &sectorRepository{
 		db: db,
 	}
@@ -58,5 +59,20 @@ func (r *sectorRepository) GetSectorByName(ctx context.Context, name string) (*S
 	}
 
 	return &sector, nil
+
+}
+
+func (r *sectorRepository) GetAllSectors(ctx context.Context) ([]Sector, error) {
+	query := `SELECT * FROM sectors ORDER BY sector_name ASC`
+	var sector []Sector
+
+	if err := r.db.SelectContext(ctx, &sector, query); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return sector, nil
 
 }
