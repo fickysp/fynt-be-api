@@ -8,7 +8,7 @@ import (
 )
 
 type Claims struct {
-	ID        string          `json:"id"`
+	ID        string          `json:"account_id"`
 	Role      string          `json:"role"`
 	ProfileID string          `json:"profile_id"`
 	UpdatedAt jwt.NumericDate `json:"updated_at"`
@@ -24,7 +24,7 @@ func GenerateAccessToken(id, role, profID, secret string, updated_at time.Time) 
 		Role:      role,
 		ProfileID: profID,
 		UpdatedAt: *jwt.NewNumericDate(updated_at),
-		Type:      "access",
+		Type:      "access_token",
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expired)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -44,7 +44,7 @@ func GenerateRefreshToken(id, role, profID, secret string, updated_at time.Time,
 		Role:      role,
 		ProfileID: profID,
 		UpdatedAt: *jwt.NewNumericDate(updated_at),
-		Type:      "refresh",
+		Type:      "refresh_token",
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expired)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
