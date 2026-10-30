@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
+	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
 
 	"github.com/fickysp/fynt-be-api/internal/applicant"
@@ -47,7 +49,7 @@ func NewWalletUsecase(wr WalletRepository, tr transaction.TransactionRepository,
 func (u *walletUsecase) GetBalance(ctx context.Context, accID string) (*DTOBalanceResponse, error) {
 	walletData, err := u.walletRepo.GetWalletByID(ctx, accID)
 	if err != nil {
-		return nil, errors.New("failed to retrieve wallet balance")
+		return nil, errors.New("Gagal mengambil data wallet user")
 	}
 
 	return &DTOBalanceResponse{
@@ -58,57 +60,74 @@ func (u *walletUsecase) GetBalance(ctx context.Context, accID string) (*DTOBalan
 func (u *walletUsecase) RequestTopUp(ctx context.Context, role string, req DTOTopUpRequest) (*DTOTopUpResponse, error) {
 	accUUID, err := uuid.Parse(req.AccountID)
 	if err != nil {
-		return nil, errors.New("invalid account id")
+		return nil, fiber.NewError(fiber.StatusBadRequest, "Format account ID tidak valid")
 	}
 
+	if req.CoinAmount <= 0 {
+		return nil, fiber.NewError(fiber.StatusBadRequest, "Minimum top-up adalah 1 koin")
+	}
 	if req.Amount < 10000 {
-		return nil, errors.New("minimum top-up amount is 10000")
+		return nil, fiber.NewError(fiber.StatusBadRequest, "Minimum top-up adalah Rp10.000")
 	}
 
 	var customerName string
-	if role == "seeker" {
+	switch role {
+	case "seeker":
 		applicant, err := u.profilRepo.GetApplicantByAccountID(ctx, req.AccountID)
 		if err != nil {
-			return nil, errors.New("applicant profile not found")
+			return nil, fiber.NewError(fiber.StatusNotFound, "Profil pelamar tidak ditemukan")
 		}
-		customerName = strings.TrimSpace(*applicant.FirstName + " " + *applicant.LastName)
-	} else if role == "recruiter" {
+		firstName := ""
+		lastName := ""
+		if applicant.FirstName != nil {
+			firstName = *applicant.FirstName
+		}
+		if applicant.LastName != nil {
+			lastName = *applicant.LastName
+		}
+		customerName = strings.TrimSpace(firstName + " " + lastName)
+		if customerName == "" {
+			customerName = "Pengguna"
+		}
+	case "recruiter":
 		company, err := u.profilRepo.GetCompanyByAccountID(ctx, req.AccountID)
 		if err != nil {
-			return nil, errors.New("company profile not found")
+			return nil, fiber.NewError(fiber.StatusNotFound, "Profil perusahaan tidak ditemukan")
 		}
 		customerName = company.CompanyName
-	} else {
-		return nil, errors.New("unauthorized role for top-up")
+	default:
+		return nil, fiber.NewError(fiber.StatusForbidden, "Role tidak diizinkan untuk top-up")
 	}
 
 	orderID := fmt.Sprintf("TRX-FYNT-%d-%s", time.Now().Unix(), accUUID.String()[:8])
 
+	snapToken, snapURL, err := u.pgClient.CreatePaymentURL(orderID, req.Amount, customerName)
+	if err != nil {
+		slog.Error("gagal membuat payment URL", "error", err, "order_id", orderID)
+		return nil, fiber.NewError(fiber.StatusServiceUnavailable, "Payment gateway tidak tersedia, coba beberapa saat lagi")
+	}
+
 	trx := &transaction.Transaction{
-		ID:        uuid.New(),
-		AccountID: accUUID,
-		OrderID:   orderID,
-		Amount:    req.Amount,
-		Status:    "pending",
+		ID:         uuid.New(),
+		AccountID:  accUUID,
+		OrderID:    orderID,
+		CoinAmount: req.CoinAmount,
+		Amount:     req.Amount,
+		Status:     "pending",
+		SnapToken:  &snapToken,
+		SnapURL:    &snapURL,
 	}
 
 	if err := u.transRepo.Create(ctx, trx); err != nil {
-		return nil, errors.New("failed to initialize transaction record")
-	}
-
-	snapToken, snapURL, err := u.pgClient.CreatePaymentURL(orderID, req.Amount, customerName)
-	if err != nil {
-		return nil, errors.New("payment gateway is currently unavailable")
-	}
-
-	if err := u.transRepo.UpdateSnap(ctx, orderID, snapToken, snapURL); err != nil {
-		return nil, errors.New("failed to attach payment token to transaction")
+		slog.Error("gagal simpan transaksi", "error", err, "order_id", orderID, "coin_ammount", req.CoinAmount)
+		return nil, fiber.NewError(fiber.StatusInternalServerError, "Gagal menyimpan transaksi")
 	}
 
 	return &DTOTopUpResponse{
-		OrderID:   orderID,
-		Amount:    req.Amount,
-		SnapToken: snapToken,
-		SnapURL:   snapURL,
+		OrderID:    orderID,
+		CoinAmount: req.CoinAmount,
+		Amount:     req.Amount,
+		SnapToken:  snapToken,
+		SnapURL:    snapURL,
 	}, nil
 }
