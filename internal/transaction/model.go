@@ -10,6 +10,7 @@ type Transaction struct {
 	ID          uuid.UUID `db:"id" json:"id"`
 	AccountID   uuid.UUID `db:"account_id" json:"account_id"`
 	OrderID     string    `db:"order_id" json:"order_id"`
+	CoinAmount  int64     `db:"coin_amount" json:"coin_amount"`
 	Amount      int64     `db:"amount" json:"amount"`
 	PaymentType *string   `db:"payment_type" json:"payment_type,omitempty"`
 	Status      string    `db:"status" json:"status"`
@@ -25,4 +26,6 @@ type DTOMidtransNotification struct {
 	PaymentType       string `json:"payment_type"`
 	FraudStatus       string `json:"fraud_status"`
 	GrossAmount       string `json:"gross_amount"`
+	StatusCode        string `json:"status_code"`
+	SignatureKey      string `json:"signature_key"`
 }
